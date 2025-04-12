@@ -1,0 +1,44 @@
+import telegram
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+import openai
+
+# OpenAI setup
+openai.api_key = 'YOUR_OPENAI_API_KEY'
+
+# /start command ke liye function
+def start(update, context):
+    greeting = "Hello! Welcome to HelloBot by INTERNHALA TRAININGS. How can I assist you today?"
+    update.message.reply_text(greeting)
+
+# Messages ke liye OpenAI response
+def handle_message(update, context):
+    user_message = update.message.text
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a friendly AI assistant."},
+            {"role": "user", "content": user_message}
+        ],
+        max_tokens=150,
+        temperature=0.7
+    )
+    reply = response.choices[0].message['content'].strip()
+    update.message.reply_text(reply)
+
+# Bot ko setup karo
+def main():
+    updater = Updater('YOUR_TELEGRAM_BOT_TOKEN', use_context=True)
+    dp = updater.dispatcher
+
+    # Handlers add karo
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+
+    # Bot start karo
+    print("Starting the bot...")
+    updater.start_polling()
+    print("Bot is running... Press Ctrl+C to stop.")
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
